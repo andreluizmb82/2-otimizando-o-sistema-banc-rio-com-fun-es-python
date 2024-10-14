@@ -1,1 +1,6 @@
 criando-um-sistema-bancário-com -python.code-workspace
+.idea
+.vscode
+.mypy_cache
+test
+test.py

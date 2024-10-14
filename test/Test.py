@@ -1,3 +1,4 @@
+from typing import  Any 
 import inspect
 import os
 import re
@@ -13,7 +14,7 @@ class Test:
     BLUE = "\033[94m"
     RESET = "\033[0m"
     @classmethod
-    def assert_equals(cls, espected, result, description=""):
+    def assert_equals(cls, espected: Any, result: Any, description: str="")-> None:
         if espected == result:
             cls._passed_tests_counter += 1
             cls._total_tests_counter += 1 
@@ -33,7 +34,7 @@ class Test:
             print(f"--------------------------------------------------{cls.RESET}\n")
 
     @classmethod
-    def print_summary(cls):
+    def print_summary(cls)-> None:
         Reporter.print_summary()
 
 
@@ -42,7 +43,7 @@ class Reporter:
 
 
     @classmethod
-    def print_summary(cls):
+    def print_summary(cls)-> None:
         print(f"{Test.RESET}\n\n--------------------------------------------------")
         print(f"{Test.BLUE}SUMMARY OF TESTS")
         print(f"{Test.YELLOW} Total: {Test._total_tests_counter}")
@@ -51,14 +52,14 @@ class Reporter:
         print(f"{Test.RESET}--------------------------------------------------\n\n")
         
     @classmethod
-    def error_location(cls):
+    def error_location(cls)->str:
         frame = inspect.stack()[1]
         path = re.split(r"[\\/]", frame.filename)
         file = path.pop()
         if os.name == 'nt':
-            path = "\\".join(path) + "\\"
+            _path = "\\".join(path) + "\\"
         elif os.name == 'posix':
-            path = "/".join(path) + "/"
+            _path = "/".join(path) + "/"
 
-        return f"{Test.YELLOW}Method 'assert_equals' was called {Test.RED}on line {frame.lineno}{Test.YELLOW} in file '{path}{Test.RED}{file}'."
+        return f"{Test.YELLOW}Method 'assert_equals' was called {Test.RED}on line {frame.lineno}{Test.YELLOW} in file '{_path}{Test.RED}{file}'."
     

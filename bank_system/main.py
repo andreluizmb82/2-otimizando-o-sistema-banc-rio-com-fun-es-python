@@ -1,94 +1,83 @@
-import os
-VERMELHO = "\033[31m"
-AMARELO = A = "\033[33m"
-VERDE = "\033[32m"
-AZUL = "\033[34m"
-NEGRITO = N = "\033[1m"
-FUNDO_AZUL = FA= "\033[44m"
+from service_account import *#menu, deposit, withdraw, show_statement, create_new_account
+from service_validation import filter_user
+from utils_print import my_print, Pu, clear
+from util_create_new_user import util_create_new_user
+from type_define import *
 
-RESET_COR = R = "\033[0m"
-OI = f"{AZUL}Olá, seja bem vindo ao Banco Python!{RESET_COR}"
-
-def letras_menu (letra: str):
-    return f"{N}{A}{FA}[{letra}]{R}{RESET_COR}"
-MENU = f"""
-{AMARELO}---- MENU ----{RESET_COR}
-{letras_menu('d')} Depositar
-{letras_menu('s')} Sacar
-{letras_menu('e')} Extrato
-{letras_menu('q')} Sair
-{OI}
-=> """
-senha = None
-saldo = 0
-limite = 500
-extrato = ""
-numero_saques = 0
-LIMITE_SAQUES = 3
-
-def clear():
-    my_print("")
+def main()-> None:
+    balance:float = 0
+    withdrawal_amount_limit: float = 500
+    statement: str = ""
+    withdrawal_number: int = 0
+    WITHDRAWAL_NUMBER_LIMIT: int = 3
+    users: Users = []
+    user: User = {}
+    account_number: int = 0
+    bank_branch = "0001"
+    while True:
+        operacao = input(menu()).lower()
+        match operacao:
+            case "d":
+                clear()
+                value = float(input(f"{Pu.YELLOW}Informe o valor do depósito: R${Pu.RESET_COLOR}"))
+                balance, statement, msg = deposit(balance, value, statement)
+                my_print(msg)
+                print(f"{Pu.YELLOW}Saldo: R$ {balance:.2f}{Pu.RESET_COLOR}")
+                
+            case "s":
+                clear()
+                value = float(input(f"{Pu.YELLOW}Informe o valor do saque: R${Pu.RESET_COLOR}"))
+                balance, statement, withdrawal_number, msg = withdraw(
+                    balance = balance,
+                    value = value,
+                    statement = statement,
+                    withdrawal_amount_limit = withdrawal_amount_limit,
+                    withdrawal_number = withdrawal_number,
+                    withdrawal_number_limit = WITHDRAWAL_NUMBER_LIMIT
+                )
+                my_print(msg)
+                
+            case "e":
+                show_statement(balance, statement = statement)
     
-def my_print(msg: str):
-    if os.name == 'nt':
-        os.system('cls')
-    else:
-        os.system('clear')
-    print(msg)
-
-while True:
-    operacao = input(MENU)
-
-    match operacao:
-        case "d":
-            clear()
-            valor = float(input(f"{AMARELO}Informe o valor do depósito: R${RESET_COR}"))
-
-            if valor > 0:
-                saldo += valor
-                extrato += f"Depósito: R$ {valor:.2f}\n"
-
-            else:
-                print("Operação falhou! O valor informado é inválido.")
-        
-
-        case "s" | "S":
-            clear()
-            valor = float(input(f"{AMARELO}Informe o valor do saque: R${RESET_COR}"))
-
-            excedeu_saldo = valor > saldo
-
-            excedeu_limite = valor > limite
-
-            excedeu_saques = numero_saques >= LIMITE_SAQUES
-
-            if excedeu_saldo:
-                my_print(f"{VERMELHO}Operação falhou! Saldo insuficiente suficiente.{RESET_COR}")
-
-            elif excedeu_limite:
-                my_print(f"{VERMELHO}Operação falhou! Você excedeu o valor limite de saque diários.{RESET_COR}")
-
-            elif excedeu_saques:
-                my_print(f"{VERMELHO}Operação falhou! Você atingiu o número máximo de saques.{RESET_COR}")
-
-            elif valor > 0:
-                saldo -= valor
-                extrato += f"Saque: R$ {valor:.2f}\n"
-                numero_saques += 1
-                my_print(f"{VERDE}Saque realizado com sucesso!{RESET_COR}")
-
-            else:
-                my_print(f"{VERMELHO}Operação falhou! Valor inválido.{RESET_COR}")
-
-        case "e" | "E":
-            clear()
-            print(AMARELO + "EXTRATO".center(50, "="))
-            print("Não foram realizadas movimentações." if not extrato else extrato)
-            print(f"\nSaldo: R$ {saldo:.2f}")
-            print("FIM".center(50, "=") + RESET_COR)
-
-        case "q" | "Q":
-            break
-
-        case _:
-            my_print("Operação inválida, por favor selecione uma das opções disponíveis no menu.")
+            case "nu":
+                user, msg, is_nwe_user = util_create_new_user(users)
+                if is_nwe_user and user:
+                    users.append(user)
+                my_print(msg)
+                
+            case "nc":
+                clear()
+                cpf = input(f"{Pu.YELLOW}Informe o cpf do usuário: ")
+                
+                user, new_account, msg, account_number = create_new_account(cpf, users, account_number, bank_branch)
+                if new_account:
+                    user["accounts"].append(new_account)
+                
+                my_print(msg)
+                    
+            case "bu":
+                clear()
+                cpf = input(f"{Pu.YELLOW}Informe o cpf do usuário: {Pu.RESET_COLOR}")
+                user = filter_user(cpf, users)
+                
+                if user != None:
+                    my_print(user)
+                    continue
+                my_print(f"{Pu.RED}Usuário não encontrado em nossa base de dados!{Pu.RESET_COLOR}")
+                
+            case "lu":
+                print(users_list(users))
+                
+            case "lc":
+                print(accounts_list(users))
+                
+            case "q":
+                clear()
+                break
+            
+            case _:
+                my_print(f"{Pu.RED}Operação inválida, por favor selecione uma das opções disponíveis no menu.{Pu.RESET_COLOR}")
+                
+if __name__ == "__main__":
+    main()
